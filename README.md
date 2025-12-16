@@ -1,7 +1,7 @@
 # SQL & Database Design (ERD)
 
 ## Objective
-Design a relational database for a business case and demonstrate SQL querying
+Design relational databases for a business cases and demonstrate SQL querying
 skills through clean schema design, ERD modeling, and analytical queries.
 
 ## Skills Demonstrated
