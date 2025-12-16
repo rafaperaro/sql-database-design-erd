@@ -1,0 +1,399 @@
+﻿CREATE DATABASE
+
+
+DROP DATABASE IF EXISTS CoffeeProduction;
+
+
+-- Create database
+CREATE DATABASE CoffeeProduction;
+USE CoffeeProduction;
+
+
+-- Create Equipment table
+CREATE TABLE Equipment (
+    EquipmentID INT PRIMARY KEY,
+    BatchID INT,
+    Type VARCHAR(255),
+    PurchaseDate DATE,
+    MaintenanceSchedule DATETIME,
+    Status VARCHAR(50),
+    LastMaintenanceDate DATE
+);
+
+
+-- Create Roasting Batches Table
+CREATE TABLE RoastingBatches (
+    BatchID INT PRIMARY KEY,
+    OrderID INT,
+    EquipmentID INT,
+    BeanBatchID INT,
+    RoastDate DATE,
+    BatchSize INT,
+    RoastType INT
+);
+
+
+-- Create Batch Size table
+CREATE TABLE BatchSize (
+    BatchSizeID INT PRIMARY KEY,
+    Temperature FLOAT,
+    RoR FLOAT,
+    Airflow FLOAT,
+    EndingTemperature FLOAT,
+    BatchID INT
+);
+
+
+-- Customers table split normalization: Customer Address
+CREATE TABLE CustomerAddress (
+    AddressID INT PRIMARY KEY,
+    CustomerState VARCHAR(255),
+    CustomerCity VARCHAR(255),
+    CustomerStreet VARCHAR(255),
+    CustomerNumber VARCHAR(20),
+    CustomerCountry VARCHAR(255)
+);
+
+
+CREATE TABLE Customers (
+    CustomerID INT PRIMARY KEY,
+    OrderID INT,
+    CustomerName VARCHAR(255),
+    CustomerEmail VARCHAR(255),
+    CustomerPhoneNumber VARCHAR(20),
+    CustomerType VARCHAR(50),
+    FavoriteBean VARCHAR(255),
+    FavoriteRoast VARCHAR(255),
+    OrderFrequency INT,
+    AddressID INT,
+    FOREIGN KEY (AddressID) REFERENCES CustomerAddress(AddressID)
+);
+
+
+-- Delivery Trucks table and Truck Types normalization
+CREATE TABLE TruckTypes (
+    TruckTypeID INT PRIMARY KEY,
+    DeliveryRegion VARCHAR(255)
+);
+
+
+CREATE TABLE DeliveryTrucks (
+    TruckID INT PRIMARY KEY,
+    SupplierID INT,
+    OrderID INT,
+    TruckTypeID INT,
+    MaintenanceStatus VARCHAR(50),
+    Capacity INT,
+    LastServiceDate DATE,
+    FOREIGN KEY (TruckTypeID) REFERENCES TruckTypes(TruckTypeID)
+);
+
+
+-- Create orders
+CREATE TABLE Orders (
+    OrderID INT PRIMARY KEY,
+    CustomerID INT,
+    BatchID INT,
+    BeanBatchID INT,
+    OrderDate DATE,
+    OrderAmount FLOAT,
+    DeliveryStatus VARCHAR(50),
+    PaymentStatus VARCHAR(50),
+    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
+);
+
+
+-- Create Bean Batches
+CREATE TABLE BeanBatches (
+    BeanBatchID INT PRIMARY KEY,
+    SupplierID INT,
+    BatchID INT,
+    OriginCountry VARCHAR(255),
+    BeanType VARCHAR(255),
+    DateOrdered DATE,
+    DeliveryDate DATE,
+    IsPaid BOOLEAN,
+    QualityRating INT,
+    PurchasePrice FLOAT,
+    Quantity INT,
+    RoastStatus VARCHAR(50)
+);
+
+
+-- Create Delivery Trucks-Suppliers
+CREATE TABLE TruckSuppliers (
+    TruckID INT,
+    SupplierID INT,
+    PRIMARY KEY (TruckID, SupplierID)
+);
+
+
+CREATE TABLE Suppliers (
+    SupplierID INT PRIMARY KEY,
+    TruckID INT,
+    BeanBatchID INT,
+    SupplierName VARCHAR(255),
+    SupplierEmail VARCHAR(255),
+    SupplierPhone VARCHAR(20),
+    Country VARCHAR(255),
+    PaymentsDue BOOLEAN,
+    DeliveryTime DATETIME,
+    Rating INT,
+    SupplierCategory VARCHAR(255),
+    FOREIGN KEY (TruckID) REFERENCES DeliveryTrucks(TruckID)
+);
+
+
+INSERTING DATA
+
+
+-- Insert data into Equipment
+INSERT INTO Equipment VALUES 
+(1, 101, 'Coffee Roaster', '2022-01-15', '2023-11-20 12:00:00', 'active', '2023-11-30'),
+(2, 102, 'Coffee Grinder', '2022-06-20', '2023-12-01 10:00:00', 'active', '2023-11-28'),
+(3, 103, 'Brew Machine', '2021-12-01', '2023-11-30 09:00:00', 'inactive', '2023-10-15'),
+(4, 104, 'Sorting Machine', '2022-08-01', '2023-11-15 10:00:00', 'active', '2023-11-20'),
+(5, 105, 'Packaging Machine', '2023-02-10', '2023-12-01 10:30:00', 'active', '2023-11-15'),
+(6, 106, 'Quality Check Machine', '2023-03-15', '2023-11-01 11:00:00', 'active', '2023-12-01'),
+(7, 107, 'Roaster', '2020-11-25', '2023-12-01 11:30:00', 'inactive', '2023-10-01'),
+(8, 108, 'Dryer', '2021-10-10', '2023-11-01 10:00:00', 'active', '2023-11-10'),
+(9, 109, 'Mixer', '2023-01-20', '2023-12-01 12:00:00', 'active', '2023-11-20'),
+(10, 110, 'Conveyor Belt', '2022-09-10', '2023-11-05 12:00:00', 'active', '2023-11-12');
+
+
+-- Insert data into RoastingBatches
+INSERT INTO RoastingBatches VALUES 
+(1, 201, 1, 101, '2023-12-01', 500, 1),
+(2, 202, 2, 102, '2023-12-02', 300, 2),
+(3, 203, 3, 103, '2023-11-29', 400, 1),
+(4, 204, 4, 104, '2023-12-03', 200, 2),
+(5, 205, 5, 105, '2023-11-25', 450, 2),
+(6, 206, 6, 106, '2023-12-01', 300, 3),
+(7, 207, 7, 107, '2023-12-04', 350, 1),
+(8, 208, 8, 108, '2023-11-30', 500, 3),
+(9, 209, 9, 109, '2023-12-01', 550, 2),
+(10, 210, 10, 110, '2023-11-28', 400, 1);
+
+
+-- Insert into BatchSize
+INSERT INTO BatchSize VALUES 
+(1, 190.0, 5.0, 2.0, 205.0, 1),
+(2, 195.0, 6.0, 3.0, 210.0, 2),
+(3, 185.0, 4.0, 3.0, 190.0, 3),
+(4, 200.0, 7.0, 4.0, 215.0, 4),
+(5, 193.0, 5.5, 2.5, 200.0, 5),
+(6, 180.0, 4.0, 3.0, 185.0, 6),
+(7, 176.0, 6.5, 2.0, 182.0, 7),
+(8, 200.0, 8.0, 4.5, 220.0, 8),
+(9, 187.0, 6.0, 3.0, 193.0, 9),
+(10, 192.0, 5.5, 3.0, 197.0, 10);
+
+
+-- Insert data into CustomerAddress
+INSERT INTO CustomerAddress VALUES 
+(1, 'California', 'Los Angeles', 'Main St', '123', 'USA'),
+(2, 'Texas', 'Houston', '5th Ave', '456', 'USA'),
+(3, 'New York', 'Brooklyn', '1st Ave', '789', 'USA'),
+(4, 'Florida', 'Miami', 'Ocean Dr', '101', 'USA'),
+(5, 'Nevada', 'Las Vegas', 'Main St', '202', 'USA'),
+(6, 'Ohio', 'Cleveland', 'Central Ave', '303', 'USA'),
+(7, 'Colorado', 'Denver', 'Rocky Rd', '404', 'USA'),
+(8, 'Arizona', 'Phoenix', 'Sunset Blvd', '505', 'USA'),
+(9, 'Washington', 'Seattle', 'Pine St', '606', 'USA'),
+(10, 'Oregon', 'Portland', 'Market St', '707', 'USA');
+
+
+-- Insert data into Customers
+INSERT INTO Customers VALUES 
+(1, 301, 'John Doe', 'johndoe@email.com', '123-456-7890', 'Regular', 'Arabica', 'Dark', 5, 1),
+(2, 302, 'Jane Smith', 'janesmith@email.com', '321-654-9870', 'Regular', 'Robusta', 'Light', 2, 2),
+(3, 303, 'David Brown', 'davidbrown@email.com', '213-546-9870', 'Premium', 'Colombian', 'Medium', 3, 3),
+(4, 304, 'Linda Green', 'lindagreen@email.com', '412-789-6540', 'Regular', 'Arabica', 'Light', 1, 4),
+(5, 305, 'James White', 'jameswhite@email.com', '546-789-1230', 'Premium', 'Robusta', 'Dark', 2, 5),
+(6, 306, 'Sophia Carter', 'sophiacarter@email.com', '789-123-4560', 'Regular', 'Colombian', 'Medium', 3, 6),
+(7, 307, 'Ethan Carter', 'ethancarter@email.com', '456-789-3210', 'Regular', 'Robusta', 'Light', 4, 7),
+(8, 308, 'Isabella Scott', 'isabellascott@email.com', '321-456-7890', 'Premium', 'Colombian', 'Dark', 5, 8),
+(9, 309, 'Mia Davis', 'miadavis@email.com', '123-321-4560', 'Premium', 'Robusta', 'Dark', 6, 9),
+(10, 310, 'Noah Wilson', 'noahwilson@email.com', '321-987-6540', 'Regular', 'Arabica', 'Medium', 4, 10);
+
+
+-- Insert data into Bean Batches
+
+
+INSERT INTO BeanBatches VALUES 
+(1, 1, 101, 'Colombia', 'Arabica', '2023-01-10', '2023-01-20', true, 8, 10.5, 500, 'Roasted'),
+(2, 2, 102, 'Ethiopia', 'Robusta', '2023-02-15', '2023-02-28', true, 7, 9.0, 450, 'Unroasted'),
+(3, 3, 103, 'Brazil', 'Arabica', '2023-03-01', '2023-03-15', false, 6, 11.0, 400, 'Roasted'),
+(4, 4, 104, 'Guatemala', 'Robusta', '2023-01-30', '2023-02-14', true, 6, 10.0, 350, 'Roasted'),
+(5, 5, 105, 'Honduras', 'Arabica', '2023-04-01', '2023-04-15', true, 8, 12.5, 500, 'Unroasted'),
+(6, 6, 106, 'Kenya', 'Robusta', '2023-03-15', '2023-03-30', false, 7, 10.8, 400, 'Roasted'),
+(7, 7, 107, 'Mexico', 'Arabica', '2023-02-10', '2023-02-20', true, 8, 11.0, 300, 'Unroasted'),
+(8, 8, 108, 'Vietnam', 'Robusta', '2023-03-20', '2023-03-25', true, 7, 9.8, 350, 'Roasted'),
+(9, 9, 109, 'Indonesia', 'Arabica', '2023-04-10', '2023-04-20', true, 7, 10.0, 400, 'Unroasted'),
+(10, 10, 110, 'Peru', 'Robusta', '2023-02-15', '2023-02-28', false, 8, 12.0, 450, 'Roasted');
+
+
+
+
+
+
+-- Insert data into DeliveryTrucks
+
+
+INSERT INTO DeliveryTrucks VALUES 
+(1, 1, 301, 'Truck', 'Active', 15, '2023-12-01'),
+(2, 2, 302, 'Van', 'Active', 10, '2023-11-20'),
+(3, 3, 303, 'Truck', 'Inactive', 20, '2023-11-10'),
+(4, 4, 304, 'Van', 'Active', 8, '2023-12-01'),
+(5, 5, 305, 'Truck', 'Active', 25, '2023-12-05'),
+(6, 6, 306, 'Van', 'Inactive', 12, '2023-11-30'),
+(7, 7, 307, 'Truck', 'Active', 10, '2023-12-01'),
+(8, 8, 308, 'Van', 'Active', 18, '2023-12-01'),
+(9, 9, 309, 'Truck', 'Active', 20, '2023-12-01'),
+(10, 10, 310, 'Van', 'Inactive', 15, '2023-12-01');
+
+
+-- Insert data into Orders
+
+
+INSERT INTO Orders VALUES 
+(1, 301, 101, 1, '2023-12-01', 250.00, 'Delivered', 'Paid'),
+(2, 302, 102, 2, '2023-12-01', 300.00, 'Shipped', 'Paid'),
+(3, 303, 103, 3, '2023-12-01', 180.00, 'Pending', 'Unpaid'),
+(4, 304, 104, 4, '2023-12-01', 200.00, 'Pending', 'Paid'),
+(5, 305, 105, 5, '2023-11-30', 275.00, 'Delivered', 'Paid'),
+(6, 306, 106, 6, '2023-12-01', 300.00, 'Shipped', 'Paid'),
+(7, 307, 107, 7, '2023-12-02', 350.00, 'Shipped', 'Unpaid'),
+(8, 308, 108, 8, '2023-12-03', 325.00, 'Pending', 'Paid'),
+(9, 309, 109, 9, '2023-11-30', 225.00, 'Delivered', 'Paid'),
+(10, 310, 110, 10, '2023-12-01', 400.00, 'Delivered', 'Unpaid');
+
+
+-- Insert data into Suppliers
+
+
+INSERT INTO Suppliers VALUES 
+(1, 1, 101, 'Green Beans Co.', 'greenbeans@email.com', '123-456-7890', 'USA', true, '2023-11-10', 8, 'Coffee'),
+(2, 2, 102, 'Bean Masters', 'beanmasters@email.com', '321-987-6543', 'Brazil', false, '2023-12-01', 7, 'Coffee'),
+(3, 3, 103, 'Roast Express', 'roastexpress@email.com', '456-789-1230', 'Ethiopia', true, '2023-10-30', 8, 'Coffee'),
+(4, 4, 104, 'Global Beans', 'globalbeans@email.com', '789-123-4567', 'Vietnam', true, '2023-12-01', 7, 'Coffee'),
+(5, 5, 105, 'Coffee Exporters', 'coffeeexport@email.com', '123-321-6540', 'Colombia', false, '2023-11-20', 6, 'Coffee'),
+(6, 6, 106, 'Trade Beans', 'tradebeans@email.com', '321-654-9870', 'Mexico', true, '2023-12-01', 8, 'Coffee'),
+(7, 7, 107, 'Roasting Masters', 'roastingmasters@email.com', '987-654-3210', 'USA', true, '2023-11-25', 6, 'Coffee'),
+(8, 8, 108, 'Java Roasters', 'java@email.com', '111-223-3444', 'Germany', true, '2023-12-01', 7, 'Coffee'),
+(9, 9, 109, 'Coffee Traders', 'traders@email.com', '567-789-1230', 'Kenya', false, '2023-12-01', 9, 'Coffee'),
+(10, 10, 110, 'Super Beans', 'superbeans@email.com', '890-123-4567', 'India', true, '2023-11-30', 8, 'Coffee');
+
+
+-- Insert data into TruckSuppliers
+INSERT INTO TruckSuppliers VALUES 
+(1, 1),
+(2, 2),
+(3, 3),
+(4, 4),
+(5, 5),
+(6, 6),
+(7, 7),
+(8, 8),
+(9, 9),
+(10, 10);
+
+
+-- Insert data into TruckTypes
+INSERT INTO TruckTypes VALUES 
+(1, 5),
+(2, 8),
+(3, 6),
+(4, 4),
+(5, 10),
+(6, 7),
+(7, 3),
+(8, 9),
+(9, 4),
+(10, 5);
+
+
+
+
+REPORTS:
+
+
+-- Report 1: Generate a list of customers who have made a purchase, including their names and contact information.
+-- This query fetches the names, email addresses, and phone numbers of customers who have placed at least one order.
+SELECT DISTINCT c.CustomerName, c.CustomerEmail, c.CustomerPhoneNumber
+FROM Customers c
+JOIN Orders o ON c.CustomerID = o.CustomerID;
+
+
+-- Report 2: Retrieve a count of orders placed for each customer.
+-- This query counts how many orders each customer has made by grouping their customer ID.
+SELECT c.CustomerName, COUNT(o.OrderID) AS TotalOrders
+FROM Customers c
+JOIN Orders o ON c.CustomerID = o.CustomerID
+GROUP BY c.CustomerID, c.CustomerName;
+
+
+-- Report 3: List the top-selling products based on the total quantity sold.
+-- This query determines the total number of units sold for each product type (BeanType) and orders the result descending by quantity.
+SELECT b.BeanType, SUM(o.Quantity) AS TotalQuantitySold
+FROM Orders o
+JOIN BeanBatches b ON o.BeanBatchID = b.BeanBatchID
+GROUP BY b.BeanType
+ORDER BY TotalQuantitySold DESC;
+
+
+-- Report 4: Display the total revenue generated by each product category.
+-- This query calculates total revenue by summing up order amounts grouped by the supplier category.
+SELECT s.SupplierCategory, SUM(o.OrderAmount) AS TotalRevenue
+FROM Orders o
+JOIN BeanBatches b ON o.BeanBatchID = b.BeanBatchID
+JOIN Suppliers s ON b.SupplierID = s.SupplierID
+GROUP BY s.SupplierCategory;
+
+
+-- Report 5: Find the customers who have made purchases within the last 30 days.
+-- This query uses a subquery to find customers who made purchases within the 30-day period from the current date.
+SELECT DISTINCT c.CustomerID, c.CustomerName, c.CustomerEmail, c.CustomerPhoneNumber
+FROM Customers c
+JOIN Orders o ON c.CustomerID = o.CustomerID
+WHERE o.OrderDate >= (SELECT CURDATE() - INTERVAL 30 DAY);
+
+
+-- Report 6: Calculate the average price of products in each category.
+-- This query groups data by supplier category and calculates the average purchase price for each category.
+SELECT s.SupplierCategory, AVG(b.PurchasePrice) AS AveragePrice
+FROM BeanBatches b
+JOIN Suppliers s ON b.SupplierID = s.SupplierID
+GROUP BY s.SupplierCategory;
+
+
+-- Report 7: Determine the total revenue generated by each customer.
+-- This query sums up all order amounts placed by each customer and groups them by customer ID.
+SELECT c.CustomerName, SUM(o.OrderAmount) AS TotalRevenue
+FROM Customers c
+JOIN Orders o ON c.CustomerID = o.CustomerID
+GROUP BY c.CustomerID, c.CustomerName;
+
+
+-- Report 8: Retrieve the order details (product, quantity, price) for a specific customer.
+-- This query fetches order details by joining `Orders` with `BeanBatches` for a given specific customer.
+SELECT o.OrderID, b.BeanType, o.Quantity, o.OrderAmount
+FROM Orders o
+JOIN BeanBatches b ON o.BeanBatchID = b.BeanBatchID
+WHERE o.CustomerID = 1; -- Replace '1' with the specific customer's ID
+
+
+-- Report 9: Identify customers who have not made any purchases.
+-- This query uses a LEFT JOIN to find customers without corresponding orders in the `Orders` table.
+SELECT c.CustomerID, c.CustomerName, c.CustomerEmail
+FROM Customers c
+LEFT JOIN Orders o ON c.CustomerID = o.CustomerID
+WHERE o.OrderID IS NULL;
+
+
+-- Report 10: Retrieve the orders that include products with a price higher than the average price.
+-- This query uses a subquery to compute the average purchase price and filters for orders containing products with prices above this value.
+SELECT o.OrderID, b.BeanType, o.OrderAmount, b.PurchasePrice
+FROM Orders o
+JOIN BeanBatches b ON o.BeanBatchID = b.BeanBatchID
+WHERE b.PurchasePrice > (SELECT AVG(PurchasePrice) FROM BeanBatches);
